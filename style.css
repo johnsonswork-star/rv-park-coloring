@@ -71,3 +71,12 @@ main{position:absolute;top:76px;bottom:0;left:0;right:0}
 .q{font:700 72px Fredoka;color:#f59ab5}.lvl.lock{opacity:.6}.lvl.done .lth{background:#eef8ea}.lvl.wide{grid-column:1/-1}
 .num{position:absolute;top:-8px;left:-8px;width:34px;height:34px;border-radius:50%;background:#ffd166;color:#8a5b3c;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 #e9a93a}
 #toMap{position:absolute;top:22px;left:22px;z-index:3;font-size:14px;padding:6px 12px}
+
+#park.view.on{position:fixed;inset:0;padding:0;z-index:1;display:block}#parkWrap{position:absolute;inset:0;border-radius:0;box-shadow:none;background:#c4e8b0;touch-action:none}#parkWrap svg{width:100%;height:100%}
+header{position:relative;z-index:4}body.parkmode header{position:fixed;left:0;right:0;top:0;background:transparent;pointer-events:none}body.parkmode header>*{pointer-events:auto}
+body.parkmode .tabs,body.parkmode .iconbtn,body.parkmode #ver{background:#ffffffb0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#parkBar{position:absolute;left:50%;transform:translateX(-50%);bottom:96px;width:min(640px,92vw);display:none;z-index:3;box-shadow:0 4px 16px #0002}#parkBar.on{display:flex}
+#drawer{position:absolute;left:0;right:0;bottom:0;z-index:3;background:#fffaf6ee;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:28px 28px 0 0;box-shadow:0 -6px 24px #7a4f6630;height:44vh;transform:translateY(calc(44vh - 80px));transition:transform .35s cubic-bezier(.3,1.2,.5,1);padding-bottom:env(safe-area-inset-bottom)}
+#drawer.open{transform:translateY(0)}#drawer.open~#parkBar,#park:has(#drawer.open) #parkBar{bottom:calc(44vh + 12px)}
+#drawerHandle{height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font:700 19px Fredoka;color:#b06f8a;cursor:pointer}#drawerHandle i{width:56px;height:6px;border-radius:3px;background:#e9c9d4}#drawerHandle b{background:#f784a5;color:#fff;border-radius:12px;padding:1px 10px;margin-left:4px}
+#drawer #shop{height:calc(44vh - 90px);overflow-y:auto;padding:0 16px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;align-content:start}

@@ -11,7 +11,7 @@ const SFX={pop:c=>{const f=520*Math.pow(1.122,Math.min(c,8));tone(f,.14,'sine',.
  win:()=>[523,659,784,1047,1319].forEach((f,i)=>{tone(f,.6,'triangle',.05,1,i*.12);tone(f/2,.6,'sine',.03,1,i*.12)}),tap:()=>tone(660,.06,'sine',.04),special:()=>{tone(300,.4,'sawtooth',.02,3);tone(600,.4,'sine',.04,2)}};
 $('#snd').onclick=()=>{S.sound=!S.sound;save();hud();SFX.tap()};
 // ---------- views & modal
-function show(v){if(v==='map'){renderMap();return}document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id===v));$('#tabPlay').classList.toggle('on',v!=='park');$('#tabPark').classList.toggle('on',v==='park');if(v==='park'){if(!svgEl||!$('#parkWrap svg'))renderPark();else{shop();bar()}}else layout()}
+function show(v){if(v==='map'){renderMap();return}document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id===v));document.body.classList.toggle('parkmode',v==='park');$('#tabPlay').classList.toggle('on',v!=='park');$('#tabPark').classList.toggle('on',v==='park');if(v==='park'){if(!svgEl)renderPark();else{applyCam();drawItems();bar()}}else layout()}
 $('#tabPlay').onclick=()=>{SFX.tap();show('map')};$('#tabPark').onclick=()=>{SFX.tap();show('park')};
 function modal(html,btns){$('#mcard').innerHTML=html+'<div>'+btns.map((b,i)=>`<button class="btn ${b.alt?'alt':''}" data-i="${i}">${b.t}</button>`).join('')+'</div>';$('#modal').classList.remove('hide');
  $('#mcard').querySelectorAll('.btn').forEach(el=>el.onclick=()=>{const b=btns[+el.dataset.i];SFX.tap();if(b.f&&b.f()===false)return;$('#modal').classList.add('hide')})}
@@ -22,7 +22,7 @@ if(!S.cur)S.cur={n:0,bg:0,item:LEVELS[0].item};if(!S.inv)S.inv={};if(!S.miss)S.m
 function drawNext(){const n=S.cur.n+1;if(n<LEVELS.length){S.cur={n,bg:n,item:LEVELS[n].item};return}
  const ids=Object.keys(RARITY);const w=ids.map(id=>RARITY[id]*(1+.6*(S.miss[id]||0)));let r=Math.random()*w.reduce((a,b)=>a+b),k=0;while(r>w[k]){r-=w[k];k++}
  const item=ids[Math.min(k,ids.length-1)];ids.forEach(id=>S.miss[id]=id===item?0:(S.miss[id]||0)+1);let bg;do{bg=1+Math.floor(Math.random()*(LEVELS.length-1))}while(LEVELS[bg].item===item&&false);S.cur={n,bg,item}}
-const FEAT={rv:[300,372,210],pond:[300,374,250],fire:[300,372,150],lights:[300,262,420],bench:[300,380,180],tent:[300,372,170],trees:[300,374,190],garden:[300,384,230]};
+const FEAT={rv:[300,372,210],pond:[300,374,250],fire:[300,372,150],lights:[300,320,420],bench:[300,380,180],tent:[300,372,170],trees:[300,374,190],garden:[300,384,230]};
 let R,TOTAL,famIdx,thresh,LV;
 function setLevel(){LV=LEVELS[S.cur.bg];R=LV.regions;TOTAL=R.length;famIdx=[0,1,2,3,4].map(f=>R.map((r,i)=>r[0]===f?i:-1).filter(i=>i>=0));thresh=famIdx.map(a=>a.length?Math.max(2,30/a.length):1e9)}
 const levelName=()=>S.cur.n<LEVELS.length?LV.name:`Mystery #${S.cur.n+1}`;
@@ -65,7 +65,7 @@ function newBoard(){board.innerHTML='';G=[];for(let r=0;r<N;r++){G[r]=[];for(let
 function layout(){const W=innerWidth-36,H=innerHeight-76-26,land=innerWidth>innerHeight;let sw,B;
  if(land){B=Math.min(H-24,W*.5);sw=Math.min(W-B-24-14-24,(H-54)*1.5)}else{B=Math.min(W-24,Math.round(H*.49));sw=Math.min(W-24,(H-B-24-14-54)*1.5)}
  $('#sceneCard').style.width=sw+24+'px';cs=Math.floor(B/N);B=cs*N;board.style.width=board.style.height=B+'px';board.style.setProperty('--cs2',cs*2+'px');G.forEach((row,r)=>row.forEach((t,c)=>t&&place(t,r,c,'none')))}
-addEventListener('resize',()=>{if($('#play').classList.contains('on'))layout();else renderPark()});
+addEventListener('resize',()=>{if($('#play').classList.contains('on'))layout();else if(svgEl)applyCam()});
 const inb=(r,c)=>r>=0&&c>=0&&r<N&&c<N;
 function findRuns(){const runs=[];for(let r=0;r<N;r++){let c=0;while(c<N){let e=c+1;const k=G[r][c].k;if(k<5)while(e<N&&G[r][e].k===k)e++;if(e-c>=3)runs.push({cells:[...Array(e-c)].map((_,i)=>[r,c+i]),dir:'h',k});c=e}}
  for(let c=0;c<N;c++){let r=0;while(r<N){let e=r+1;const k=G[r][c].k;if(k<5)while(e<N&&G[e][c].k===k)e++;if(e-r>=3)runs.push({cells:[...Array(e-r)].map((_,i)=>[r+i,c]),dir:'v',k});r=e}}return runs}
@@ -114,66 +114,106 @@ function finish(){SFX.win();const it=IP[S.cur.item];const first=!S.found.include
  setTimeout(()=>{$('#spot').style.opacity=.55;$('#feat').style.opacity=1;tone(660,.5,'triangle',.05);tone(990,.7,'sine',.04,1,.2)},1500);
  setTimeout(()=>{const svg=$('#sceneWrap svg'),m=svg.getScreenCTM(),[x,y,r]=(()=>{const t={...S.cur};S.cur=finished;const v=spotXYR();S.cur=t;return v})();for(let i=0;i<14;i++)setTimeout(()=>spark(m.e+(x+(Math.random()-.5)*r*1.6)*m.a,m.f+(y+(Math.random()-.5)*r*1.4)*m.d,'#fff3b0',30),i*60)},2100);
  setTimeout(()=>{SFX.coin();modal(`<h3>You discovered:<br>${it.name}!</h3><div class="th big">${thumbSVG(it)}</div><p>${first?'Unlocked for your park.':'Another one for your park!'} It's waiting in your bag, ready to place.</p>`,
-  [{t:'Place it in my park',f:()=>{reset();show('park');startPlace(it.id);bar();drawGhost()}},{t:'Next mystery',alt:1,f:()=>{reset();show('play')}}])},3600)}
+  [{t:'Place it in my park',f:()=>{reset();startPlace(it.id)}},{t:'Next mystery',alt:1,f:()=>{reset();show('play')}}])},3600)}
 function reset(){busy=false;setLevel();S.painted=[];S.acc=[0,0,0,0,0];save();renderScene();newBoard()}
-// ---------- park (free placement)
+// ---------- park world (full screen, camera, free placement)
 const NS='http://www.w3.org/2000/svg';
 if(!S.started){S.started=1;S.inv=S.inv||{};STARTER_ITEMS.forEach(id=>S.inv[id]=(S.inv[id]||0)+1)}
 if(!S.items){S.items=(S.owned||[]).map(id=>{const [x,y,w,h]=IP[id].box;return {id,x:x+w/2,y:y+h,flip:0}})}
-let walkers=[],wpath=null,svgEl=null,placing=null,selIdx=-1,lp=null,justPlaced=null;
+if(!S.worldV){S.items.forEach(o=>{o.x+=900;o.y+=560});S.worldV=1;save()}
+let svgEl=null,camG=null,placing=null,selIdx=-1,lp=null,justPlaced=null,walkers=[],flies=[],clouds=[],birds=[];
+let cam=S.cam||{x:HUB[0]-410,y:HUB[1]-500,z:1};
 const anchor=id=>{const [x,y,w,h]=IP[id].box;return [x+w/2,y+h,w,h]};
-function itemG(o,ghost){const [ax,ay]=anchor(o.id);const g=document.createElementNS(NS,'g');g.setAttribute('transform',`translate(${o.x} ${o.y})${o.flip?' scale(-1 1)':''} translate(${-ax} ${-ay})`);g.innerHTML='<g>'+IP[o.id].svg()+'</g>';return g}
+const zoneOpenW=z=>S.items.length>=z.need;
+function itemG(o){const [ax,ay]=anchor(o.id);const g=document.createElementNS(NS,'g');g.setAttribute('transform',`translate(${o.x} ${o.y})${o.flip?' scale(-1 1)':''} translate(${-ax} ${-ay})`);g.innerHTML='<g>'+IP[o.id].svg()+'</g>';return g}
 function foot(o){const [,,w,h]=anchor(o.id);const fw=w*.42,fh=Math.min(h*.22,26);return [o.x-fw,o.y-fh,o.x+fw,o.y+4]}
-const ZONES=[{x0:0,x1:200,need:3},{x0:600,x1:800,need:6}];const zoneOpen=z=>S.items.length>=z.need||(S.zonesOpen||[]).includes(z.x0);
-function valid(o,skip){const [x0,y0,x1,y1]=foot(o);if(x0<8||x1>792||y0<108||y1>545)return false;for(const z of ZONES)if(!zoneOpen(z)&&x1>z.x0&&x0<z.x1)return false;
+function valid(o,skip){const [x0,y0,x1,y1]=foot(o);if(x0<10||x1>WW-10||y0<20||y1>WH-10)return false;
+ const pts=[[x0,y0],[x1,y0],[x0,y1],[x1,y1],[o.x,(y0+y1)/2]];for(const [x,y] of pts){if(!zoneOpenW(zoneAt(x,y)))return false;if(o.id!=='pond'&&onWater(x,y))return false}
  for(let i=0;i<S.items.length;i++){if(i===skip)continue;const [a0,b0,a1,b1]=foot(S.items[i]);if(x0<a1&&x1>a0&&y0<b1&&y1>b0)return false}return true}
-function svgPt(e){const pt=svgEl.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svgEl.getScreenCTM().inverse())}
-function drawZones(){let Z=svgEl.querySelector('#zones');if(!Z){Z=document.createElementNS(NS,'g');Z.id='zones';svgEl.querySelector('#ghost').after(Z)}Z.innerHTML=ZONES.filter(z=>!zoneOpen(z)).map(z=>`<g><rect x="${z.x0}" y="100" width="200" height="460" fill="#f6efe6" opacity=".82"/><path d="M${z.x0} 100h200v460h-200z" fill="url(#hatch)" opacity=".5"/><g transform="translate(${z.x0+100} 320)"><rect x="-80" y="-46" width="160" height="92" rx="24" fill="#fff" stroke="#e8c9d4" stroke-width="3"/><path d="M-10-26v-6a10 10 0 0 1 20 0v6" stroke="#c98aa3" stroke-width="4" fill="none"/><rect x="-15" y="-27" width="30" height="22" rx="6" fill="#f59ab5"/><text y="16" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="17" fill="#b07890">More land opens</text><text y="36" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="15" fill="#c9a0b0">at ${z.need} items placed</text></g></g>`).join('')}
-function drawItems(){const L=svgEl.querySelector('#items');L.innerHTML='';drawZones();const order=S.items.map((o,i)=>[o,i]).sort((a,b)=>a[0].y-b[0].y);
- for(const [o,i] of order){if(placing&&placing.from===i)continue;const g=itemG(o);g.dataset.i=i;if(i===selIdx)g.setAttribute('filter','drop-shadow(0 0 6px #fff) drop-shadow(0 0 4px #f784a5)');if(justPlaced===i){g.firstChild.classList.add('newitem')}L.appendChild(g)}justPlaced=null;drawGhost()}
+function vw(){return [innerWidth,innerHeight]}
+function clampCam(){const [w,h]=vw();const zmin=Math.max(w/WW,h/WH);cam.z=Math.min(1.3,Math.max(zmin,cam.z));cam.x=Math.min(WW-w/cam.z,Math.max(0,cam.x));cam.y=Math.min(WH-h/cam.z,Math.max(0,cam.y))}
+function applyCam(){clampCam();camG.setAttribute('transform',`scale(${cam.z}) translate(${-cam.x} ${-cam.y})`)}
+let camSaveT;function saveCam(){clearTimeout(camSaveT);camSaveT=setTimeout(()=>{S.cam={x:Math.round(cam.x),y:Math.round(cam.y),z:+cam.z.toFixed(3)};save()},300)}
+const toWorld=(cx,cy)=>({x:cam.x+cx/cam.z,y:cam.y+cy/cam.z});
+function drawMist(){const M=svgEl.querySelector('#mist');M.innerHTML=WZONES.filter(z=>!zoneOpenW(z)).map(z=>{const [x0,y0,x1,y1]=z.r;return `<g><rect x="${x0-40}" y="${y0-40}" width="${x1-x0+80}" height="${y1-y0+80}" fill="#fbf6f2" opacity=".86" filter="url(#mistf)"/>${[0,1,2,3].map(k=>`<ellipse class="mistb" cx="${x0+(k+.5)*(x1-x0)/4}" cy="${y0+(y1-y0)*(.3+.4*(k%2))}" rx="170" ry="80" fill="#fff" opacity=".6" filter="url(#mistf)"/>`).join('')}
+ <g transform="translate(${z.c[0]} ${z.c[1]})"><rect x="-150" y="-62" width="300" height="124" rx="34" fill="#fff" stroke="#f0c9d4" stroke-width="4"/><path d="M-14-36v-8a14 14 0 0 1 28 0v8" stroke="#c98aa3" stroke-width="5" fill="none"/><rect x="-20" y="-38" width="40" height="28" rx="8" fill="#f59ab5"/><text y="20" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="26" fill="#e0789a">${z.name}</text><text y="46" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="19" fill="#b07890">Opens at ${z.need} items placed (${S.items.length}/${z.need})</text></g></g>`}).join('')}
+function drawItems(){const L=svgEl.querySelector('#items');L.innerHTML='';drawMist();const order=S.items.map((o,i)=>[o,i]).sort((a,b)=>a[0].y-b[0].y);
+ for(const [o,i] of order){if(placing&&placing.from===i)continue;const g=itemG(o);if(i===selIdx)g.setAttribute('filter','drop-shadow(0 0 6px #fff) drop-shadow(0 0 5px #f784a5)');if(justPlaced===i)g.firstChild.classList.add('newitem');L.appendChild(g)}justPlaced=null;drawGhost();shop()}
 function drawGhost(){const G2=svgEl.querySelector('#ghost');G2.innerHTML='';if(!placing||placing.x==null)return;const ok=valid(placing,placing.from);placing.ok=ok;const [x0,y0,x1,y1]=foot(placing);
- G2.innerHTML=`<ellipse cx="${placing.x}" cy="${(y0+y1)/2}" rx="${(x1-x0)/2+8}" ry="${(y1-y0)/2+8}" fill="${ok?'#7fdc8a':'#ff8a9a'}" opacity=".55" stroke="${ok?'#3fae55':'#e0506a'}" stroke-width="3" stroke-dasharray="8 6"/>`;const g=itemG(placing);g.setAttribute('opacity','.75');G2.appendChild(g)}
-function renderPark(){const card=$('#parkCard').getBoundingClientRect();const w=Math.min(card.width,card.height*800/560);const pw=$('#parkWrap');pw.style.width=w+'px';pw.style.height=w*560/800+'px';
- pw.innerHTML=parkSVG(S.park,[]);svgEl=pw.querySelector('svg');wpath=document.createElementNS(NS,'path');wpath.setAttribute('d',PATH);wpath.setAttribute('fill','none');svgEl.insertBefore(wpath,svgEl.firstChild);
- const n=Math.min(5,1+Math.ceil(S.items.length/2));walkers=[];const g=svgEl.querySelector('#walkers');for(let i=0;i<n;i++){const el=document.createElementNS(NS,'g');el.innerHTML=CAMPERS[i];g.appendChild(el);walkers.push({el,p:Math.random(),v:(.00035+Math.random()*.0003)*(i%2?1:-1),side:(i%2?1:-1)*(6+i*3)})}
- svgEl.addEventListener('pointerdown',pDown);svgEl.addEventListener('pointermove',pMove);svgEl.addEventListener('pointerup',pUp);svgEl.style.touchAction='none';
- drawItems();shop();bar();hud()}
-function hitItem(p){let best=-1,by=-1;S.items.forEach((o,i)=>{const [,,w,h]=anchor(o.id);if(p.x>o.x-w/2&&p.x<o.x+w/2&&p.y>o.y-h&&p.y<o.y+6&&o.y>by){best=i;by=o.y}});return best}
-function pDown(e){const p=svgPt(e);svgEl.setPointerCapture(e.pointerId);if(placing){placing.x=p.x;placing.y=p.y;drawGhost();return}
- const i=hitItem(p);if(i<0){if(selIdx>=0){selIdx=-1;drawItems();bar()}return}
- lp={i,t:setTimeout(()=>{startMove(i,true);placing.x=p.x;placing.y=p.y;drawItems();if(navigator.vibrate)navigator.vibrate(15)},420),x:p.x,y:p.y}}
-function pMove(e){const p=svgPt(e);if(lp&&Math.hypot(p.x-lp.x,p.y-lp.y)>12){clearTimeout(lp.t);lp=null}if(placing){placing.x=p.x;placing.y=p.y;drawGhost()}}
-function pUp(e){if(lp){clearTimeout(lp.t);const i=lp.i;lp=null;if(!placing){selIdx=selIdx===i?-1:i;SFX.tap();drawItems();bar();return}}
- if(!placing||placing.x==null)return;if(placing.drag&&!placing.ok){cancelPlace();return}if(!placing.ok){SFX.nope();msg('That spot is blocked. Try a green spot.');return}
- const o={id:placing.id,x:Math.round(placing.x),y:Math.round(placing.y),flip:placing.flip||0};
- if(placing.from!=null){S.items[placing.from]=o;justPlaced=placing.from}else{S.items.push(o);S.inv[o.id]--;justPlaced=S.items.length-1;const [,,w,h]=anchor(o.id);sparkAt(o.x,o.y-h/2)}
- placing=null;selIdx=-1;save();SFX.coin();setTimeout(SFX.paint,100);renderPark()}
-function sparkAt(x,y){const m=svgEl.getScreenCTM();for(let i=0;i<10;i++)setTimeout(()=>spark(m.e+x*m.a+(Math.random()-.5)*80,m.f+y*m.d+(Math.random()-.5)*60,PCOL[i%5],30),i*70)}
+ G2.innerHTML=`<ellipse cx="${placing.x}" cy="${(y0+y1)/2}" rx="${(x1-x0)/2+10}" ry="${(y1-y0)/2+10}" fill="${ok?'#7fdc8a':'#ff8a9a'}" opacity=".55" stroke="${ok?'#3fae55':'#e0506a'}" stroke-width="4" stroke-dasharray="10 8"/>`;const g=itemG(placing);g.setAttribute('opacity','.78');G2.appendChild(g)}
+function bridgeAt(){const p=[...svgEl.querySelectorAll('.wp')].find(e=>e.dataset.z==='river');const L=p.getTotalLength();for(let t=0;t<L;t+=6){const a=p.getPointAtLength(t);if(onWater(a.x,a.y)){const b=p.getPointAtLength(t+40),c=p.getPointAtLength(t+80);const ang=Math.atan2(c.y-a.y,c.x-a.x)*180/Math.PI;
+ svgEl.querySelector('#bridge').innerHTML=`<g transform="translate(${b.x} ${b.y}) rotate(${ang})"><rect x="-90" y="-36" width="180" height="72" rx="12" fill="#e9b98a" stroke="${INK}" stroke-width="4"/>${[-60,-30,0,30,60].map(x=>`<path d="M${x} -36v72" stroke="#c98a5e" stroke-width="3"/>`).join('')}<path d="M-90-40h180M-90 40h180" stroke="#b9805c" stroke-width="8" stroke-linecap="round"/></g>`;return}}}
+function renderPark(){const pw=$('#parkWrap');pw.innerHTML=worldSVG(S.park);svgEl=$('#wsvg');camG=svgEl.querySelector('#cam');applyCam();bridgeAt();
+ const n=Math.min(8,2+Math.ceil(S.items.length/2));walkers=[];const paths=[...svgEl.querySelectorAll('.wp')];const g=svgEl.querySelector('#walkers');
+ for(let i=0;i<n;i++){const el=document.createElementNS(NS,'g');el.innerHTML=CAMPERS[i%CAMPERS.length];g.appendChild(el);walkers.push({el,path:null,p:Math.random(),v:0,side:(i%2?1:-1)*(8+i*2)})}
+ walkers.forEach(w=>pickPath(w,paths));
+ flies=[];const F=svgEl.querySelector('#butterflies');for(let i=0;i<10;i++){const el=document.createElementNS(NS,'g');el.innerHTML=BUTTERFLY(PCOL[i%5]);F.appendChild(el);flies.push({el,cx:300+Math.random()*2000,cy:200+Math.random()*1500,ph:Math.random()*9,sp:.3+Math.random()*.4})}
+ clouds=[];const C=svgEl.querySelector('#clouds');for(let i=0;i<4;i++){const el=document.createElementNS(NS,'g');el.innerHTML=CLOUD;C.appendChild(el);clouds.push({el,x:Math.random()*WW,y:150+Math.random()*1600,s:.8+Math.random()*.8,v:.15+Math.random()*.2})}
+ birds=[];const B=svgEl.querySelector('#birds');for(let i=0;i<5;i++){const el=document.createElementNS(NS,'g');el.innerHTML=BIRD;B.appendChild(el);birds.push({el,x:-200-i*60,y:300+i*30,v:1.2,flock:0})}
+ svgEl.addEventListener('pointerdown',pDown);svgEl.addEventListener('pointermove',pMove);svgEl.addEventListener('pointerup',pUp);svgEl.addEventListener('pointercancel',pUp);
+ svgEl.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.clientX,e.clientY,cam.z*(e.deltaY<0?1.12:.89))},{passive:false});
+ drawItems();bar();hud()}
+function pickPath(w,paths){paths=paths||[...svgEl.querySelectorAll('.wp')];const ok=paths.filter(p=>zoneOpenW(WZONES.find(z=>z.id===p.dataset.z)));w.path=ok[Math.floor(Math.random()*ok.length)];w.L=w.path.getTotalLength();w.v=(.4+Math.random()*.35)*(Math.random()<.5?1:-1);w.p=w.v>0?0:w.L}
+function zoomAt(sx,sy,nz){const wpt=toWorld(sx,sy);cam.z=nz;clampCam();cam.x=wpt.x-sx/cam.z;cam.y=wpt.y-sy/cam.z;applyCam();saveCam()}
+// gestures
+const ptr=new Map();let gest=null,vel={x:0,y:0},inertia=null;
+function hitItem(p){let best=-1,by=-1;S.items.forEach((o,i)=>{const [,,w,h]=anchor(o.id);if(p.x>o.x-w/2&&p.x<o.x+w/2&&p.y>o.y-h&&p.y<o.y+8&&o.y>by){best=i;by=o.y}});return best}
+function pDown(e){svgEl.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});cancelAnimationFrame(inertia);
+ if(ptr.size===2){if(lp){clearTimeout(lp.t);lp=null}const [a,b]=[...ptr.values()];gest={t:'pinch',d:Math.hypot(a.x-b.x,a.y-b.y),z:cam.z,w:toWorld((a.x+b.x)/2,(a.y+b.y)/2)};return}
+ const p=toWorld(e.clientX,e.clientY);
+ if(placing){gest={t:'place'};placing.x=p.x;placing.y=p.y;drawGhost();return}
+ const i=hitItem(p);gest={t:'pan',sx:e.clientX,sy:e.clientY,cx:cam.x,cy:cam.y,moved:false,lt:performance.now(),lx:e.clientX,ly:e.clientY,item:i};vel={x:0,y:0};
+ if(i>=0)lp={i,t:setTimeout(()=>{startMove(i,true);gest={t:'place'};placing.x=p.x;placing.y=p.y;drawItems();if(navigator.vibrate)navigator.vibrate(15)},420)}}
+function pMove(e){if(!ptr.has(e.pointerId))return;ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});if(!gest)return;
+ if(gest.t==='pinch'&&ptr.size>=2){const [a,b]=[...ptr.values()];const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;cam.z=gest.z*Math.hypot(a.x-b.x,a.y-b.y)/gest.d;clampCam();cam.x=gest.w.x-mx/cam.z;cam.y=gest.w.y-my/cam.z;applyCam();return}
+ if(gest.t==='place'){const p=toWorld(e.clientX,e.clientY);placing.x=p.x;placing.y=p.y;drawGhost();edgePan(e.clientX,e.clientY);return}
+ if(gest.t==='pan'){const dx=e.clientX-gest.sx,dy=e.clientY-gest.sy;if(!gest.moved&&Math.hypot(dx,dy)<10)return;gest.moved=true;if(lp){clearTimeout(lp.t);lp=null}
+  const now=performance.now(),dt=Math.max(1,now-gest.lt);vel={x:Math.max(-1.5,Math.min(1.5,(e.clientX-gest.lx)/dt)),y:Math.max(-1.5,Math.min(1.5,(e.clientY-gest.ly)/dt))};gest.lt=now;gest.lx=e.clientX;gest.ly=e.clientY;cam.x=gest.cx-dx/cam.z;cam.y=gest.cy-dy/cam.z;applyCam()}}
+function edgePan(x,y){const [w,h]=vw(),m=60;let dx=0,dy=0;if(x<m)dx=-8;if(x>w-m)dx=8;if(y<m+60)dy=-8;if(y>h-m-90)dy=8;if(dx||dy){cam.x+=dx/cam.z;cam.y+=dy/cam.z;applyCam()}}
+function pUp(e){ptr.delete(e.pointerId);if(!gest)return;
+ if(gest.t==='pinch'){if(ptr.size===0){gest=null;saveCam()}else gest={t:'none'};return}
+ if(gest.t==='none'){if(!ptr.size)gest=null;return}
+ if(gest.t==='pan'){const g=gest;gest=null;if(lp){clearTimeout(lp.t);lp=null}
+  if(!g.moved){if(g.item>=0){selIdx=selIdx===g.item?-1:g.item;SFX.tap()}else selIdx=-1;drawItems();bar();return}
+  let vx=vel.x*16,vy=vel.y*16;const step=()=>{vx*=.93;vy*=.93;cam.x-=vx/cam.z;cam.y-=vy/cam.z;applyCam();if(Math.hypot(vx,vy)>.3)inertia=requestAnimationFrame(step);else saveCam()};if(performance.now()-g.lt<80)inertia=requestAnimationFrame(step);else saveCam();return}
+ if(gest.t==='place'){gest=null;if(!placing||placing.x==null)return;if(placing.drag&&!placing.ok){cancelPlace();return}if(!placing.ok){SFX.nope();msg('That spot is blocked. Try a green spot.');return}
+  const o={id:placing.id,x:Math.round(placing.x),y:Math.round(placing.y),flip:placing.flip||0};const before=WZONES.filter(zoneOpenW).length;
+  if(placing.from!=null){S.items[placing.from]=o;justPlaced=placing.from}else{S.items.push(o);S.inv[o.id]--;justPlaced=S.items.length-1;sparkAt(o.x,o.y-40)}
+  placing=null;selIdx=-1;save();SFX.coin();setTimeout(SFX.paint,100);drawItems();bar();
+  const opened=WZONES.filter(zoneOpenW);if(opened.length>before){const z=opened.at(-1);SFX.win();walkers.forEach(w=>pickPath(w));modal(`<h3>New land!</h3><p><b>${z.name}</b> is open. Pan over to explore it.</p>`,[{t:'Take me there',f:()=>flyTo(z.c[0],z.c[1])},{t:'Later',alt:1}])}}}
+function flyTo(x,y){const [w,h]=vw();const tx=x-w/2/cam.z,ty=y-h/2/cam.z,sx=cam.x,sy=cam.y,t0=performance.now();const st=t=>{const k=Math.min(1,(t-t0)/900),e=k<.5?2*k*k:1-(-2*k+2)**2/2;cam.x=sx+(tx-sx)*e;cam.y=sy+(ty-sy)*e;applyCam();if(k<1)requestAnimationFrame(st);else saveCam()};requestAnimationFrame(st)}
+function sparkAt(x,y){for(let i=0;i<10;i++)setTimeout(()=>spark((x-cam.x)*cam.z+(Math.random()-.5)*80,(y-cam.y)*cam.z+(Math.random()-.5)*60,PCOL[i%5],30),i*70)}
 function startMove(i,drag){const o=S.items[i];placing={id:o.id,flip:o.flip,from:i,x:o.x,y:o.y,drag};selIdx=-1;lp=null;bar();drawItems()}
-function startPlace(id){placing={id,flip:0,from:null,x:null,y:null};selIdx=-1;show('park');msg(`Tap anywhere to place your ${IP[id].name}. Green means it fits.`)}
+function startPlace(id){show('park');const [w,h]=vw();const c=toWorld(w/2,h/2);placing={id,flip:0,from:null,x:c.x,y:c.y};selIdx=-1;drawer(false);bar();drawGhost()}
 function cancelPlace(){placing=null;drawItems();bar()}
-function msg(t){$('#parkMsg').textContent=t}
-function bar(){let b=$('#parkBar');if(!b){b=document.createElement('div');b.id='parkBar';$('#park').insertBefore(b,$('#shop'))}
- if(placing){b.innerHTML=`<span id="parkMsg">${placing.from!=null?'Drag to a new spot, then let go.':`Tap or drag to place your ${IP[placing.id].name}. Green means it fits.`}</span><button class="mini" id="pbFlip">Flip</button><button class="mini alt" id="pbCancel">Cancel</button>`;
-  $('#pbFlip').onclick=()=>{placing.flip=placing.flip?0:1;drawGhost()};$('#pbCancel').onclick=cancelPlace}
+function msg(t){const m=$('#parkMsg');if(m)m.textContent=t}
+function bar(){const b=$('#parkBar');
+ if(placing){b.innerHTML=`<span id="parkMsg">${placing.from!=null?'Drag to a new spot, then let go.':`Tap where your ${IP[placing.id].name} should go. Green means it fits.`}</span><button class="mini" id="pbFlip">Flip</button><button class="mini alt" id="pbCancel">Cancel</button>`;
+  $('#pbFlip').onclick=()=>{placing.flip=placing.flip?0:1;drawGhost()};$('#pbCancel').onclick=cancelPlace;b.classList.add('on')}
  else if(selIdx>=0){const o=S.items[selIdx];b.innerHTML=`<span id="parkMsg">${IP[o.id].name}</span><button class="mini" id="pbMove">Move</button><button class="mini" id="pbFlip">Flip</button><button class="mini alt" id="pbStore">Put in bag</button>`;
-  $('#pbMove').onclick=()=>startMove(selIdx,false);$('#pbFlip').onclick=()=>{o.flip=o.flip?0:1;save();drawItems()};$('#pbStore').onclick=()=>{S.inv[o.id]=(S.inv[o.id]||0)+1;S.items.splice(selIdx,1);selIdx=-1;save();renderPark()}}
- else b.innerHTML=`<span id="parkMsg">Tap decor to move, flip or store it. Hold and drag to move it quickly.</span>`}
-function walk(){if(wpath&&$('#park').classList.contains('on')){const L=wpath.getTotalLength();for(const w of walkers){w.p+=w.v;if(w.p>1||w.p<0){w.v*=-1;w.p=Math.max(0,Math.min(1,w.p))}const pt=wpath.getPointAtLength(w.p*L);w.el.setAttribute('transform',`translate(${pt.x+w.side} ${pt.y}) scale(${w.v<0?-1:1} 1)`)}}requestAnimationFrame(walk)}walk();
-function shop(){const s=$('#shop');s.innerHTML='';for(const it of PARK_ITEMS){const n=S.inv[it.id]||0,placed=S.items.filter(o=>o.id===it.id).length,have=S.found.includes(it.id)||STARTER_ITEMS.includes(it.id)||placed;const d=document.createElement('div');d.className='item'+(have?'':' lockd');
+  $('#pbMove').onclick=()=>startMove(selIdx,false);$('#pbFlip').onclick=()=>{o.flip=o.flip?0:1;save();drawItems()};$('#pbStore').onclick=()=>{S.inv[o.id]=(S.inv[o.id]||0)+1;S.items.splice(selIdx,1);selIdx=-1;save();drawItems();bar()};b.classList.add('on')}
+ else{b.innerHTML='';b.classList.remove('on')}}
+let tick=0;function life(){if(svgEl&&$('#park').classList.contains('on')){tick++;
+ for(const w of walkers){w.p+=w.v;if(w.p>w.L||w.p<0){if(Math.random()<.5)pickPath(w);else{w.v*=-1;w.p=Math.max(0,Math.min(w.L,w.p))}}const pt=w.path.getPointAtLength(w.p);w.el.setAttribute('transform',`translate(${pt.x+w.side} ${pt.y}) scale(${w.v<0?-1.4:1.4} 1.4)`)}
+ for(const f of flies){const t=tick*.01*f.sp+f.ph;f.el.setAttribute('transform',`translate(${f.cx+Math.sin(t)*160+Math.sin(t*2.3)*40} ${f.cy+Math.cos(t*1.3)*90}) rotate(${Math.sin(t*3)*20})`)}
+ for(const c of clouds){c.x+=c.v;if(c.x>WW+300){c.x=-300;c.y=150+Math.random()*1600}c.el.setAttribute('transform',`translate(${c.x} ${c.y}) scale(${c.s})`)}
+ for(const b of birds){b.x+=b.v*2;if(b.x>WW+400){b.x=-300-Math.random()*1200;b.y=150+Math.random()*1200}b.el.setAttribute('transform',`translate(${b.x} ${b.y+Math.sin(tick*.05+b.y)*6}) scale(${1+.15*Math.sin(tick*.3+b.y)} 1)`)}}requestAnimationFrame(life)}life();
+function drawer(open){const d=$('#drawer');d.classList.toggle('open',open==null?!d.classList.contains('open'):open)}
+$('#drawerHandle').onclick=()=>{SFX.tap();drawer()};
+function shop(){const s=$('#shop');s.innerHTML='';let bag=0;for(const it of PARK_ITEMS){const n=S.inv[it.id]||0;bag+=n;const placed=S.items.filter(o=>o.id===it.id).length,have=S.found.includes(it.id)||STARTER_ITEMS.includes(it.id)||placed;const d=document.createElement('div');d.className='item'+(have?'':' lockd');
  d.innerHTML=`<div class="th">${thumbSVG(it)}</div><div class="nm">${it.name}</div>`+(have?`<div class="cnt">In bag: <b>${n}</b> · Placed: <b>${placed}</b></div>${n?`<button class="buy place">Place</button>`:''}`:`<div class="cnt">Find it in a mystery picture</div>`);
- if(n)d.querySelector('.place').onclick=()=>{SFX.tap();startPlace(it.id);bar();drawGhost()};s.appendChild(d)}}
+ if(n)d.querySelector('.place').onclick=()=>{SFX.tap();startPlace(it.id)};s.appendChild(d)}$('#bagN').textContent=bag}
 // ---------- level map
 function renderMap(){const m=$('#mapGrid');m.innerHTML='';const pass=S.cur.n>=LEVELS.length;
  LEVELS.forEach((L,i)=>{const done=(S.done||[]).includes(i),cur=!pass&&S.cur.n===i;const d=document.createElement('div');d.className='lvl'+(done?' done':cur?' cur':' lock');
   d.innerHTML=`<div class="num">${i+1}</div><div class="lth">${done?thumbSVG(IP[L.item]):cur?'<span class="q">?</span>':'<svg viewBox="0 0 24 24"><path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="#d7b6c4" stroke-width="2.4" fill="none"/><rect x="5" y="11" width="14" height="10" rx="3" fill="#e9cfd9"/></svg>'}</div><b>${done?L.name:cur?'Mystery Picture':'Locked'}</b><small>${done?'Found: '+IP[L.item].name:cur?'Tap to play':'Finish the one before'}</small>`;
   if(cur)d.onclick=()=>{SFX.tap();show('play')};m.appendChild(d)});
  if(pass){const d=document.createElement('div');d.className='lvl cur wide';d.innerHTML=`<div class="lth"><span class="q">?</span></div><b>Mystery #${S.cur.n+1}</b><small>A surprise item every time. Rare finds: Duck Pond, RV Campsite.</small>`;d.onclick=()=>{SFX.tap();show('play')};m.appendChild(d)}
- document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='map'));$('#tabPlay').classList.add('on');$('#tabPark').classList.remove('on')}
+ document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='map'));document.body.classList.remove('parkmode');$('#tabPlay').classList.add('on');$('#tabPark').classList.remove('on')}
 // ---------- first launch name
 function askName(){modal(`<h3>Welcome to Cozy Camp!</h3><p>You have a sweet little patch of land by the lake. What will you name your RV park?</p><input id="pn" maxlength="22" placeholder="Sunny Pines">`,[{t:'Open my park',f:()=>{const v=$('#pn').value.trim();if(!v)return false;S.park=v;save();SFX.win()}}]);setTimeout(()=>$('#pn')&&$('#pn').focus(),60)}
 $('#toMap').onclick=()=>{SFX.tap();show('map')};
 // ---------- boot
 document.fonts&&document.fonts.load('600 20px Fredoka');
 hud();layout();renderScene();newBoard();clearHint();if(!S.park)setTimeout(askName,400);else show('map');
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js?v=3').catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js?v=4').catch(()=>{});
