@@ -1,0 +1,18 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="RV Park">
+<meta name="theme-color" content="#fbe9d7"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<title>Color Camp: RV Park</title><link rel="stylesheet" href="style.css"></head><body>
+<header id="top"><button id="tabGallery" class="tab on">🎨 Color</button><button id="tabPark" class="tab">🏕️ My Park</button>
+<div id="coins">🪙 <span id="coinN">0</span></div><div id="streak" title="Daily streak">🔥 <span id="streakN">0</span></div><button id="snd" class="icon">🔊</button></header>
+<main>
+<section id="gallery" class="view on"><h2 id="parkTitle"></h2><p class="sub">Finish a picture to earn coins. Spend them in your park.</p><div id="grid"></div></section>
+<section id="color" class="view"><canvas id="cv"></canvas>
+<div id="cbar"><button id="back" class="pill">‹ Gallery</button><span id="pct">0%</span><button id="hint" class="pill">🔍 Find</button><button id="brush" class="pill">✋ Pan</button></div>
+<div id="palette"></div></section>
+<section id="park" class="view"><div id="parkWrap"><canvas id="pk"></canvas></div>
+<div id="shopBar"><div id="shopMsg">Pick something from the shop, then tap a spot in your park.</div><div id="shop"></div></div></section>
+</main>
+<div id="modal" class="hide"><div class="card" id="mcard"></div></div>
+<script src="scenes.js"></script><script src="game.js"></script></body></html>
