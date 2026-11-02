@@ -1,0 +1,67 @@
+// ---------- Cute piece art (kawaii faces), viewBox 0 0 100 100
+const face=(y,x=50,s=1)=>`<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="-14" cy="5" rx="6" ry="3.6" fill="#ff7fa3" opacity=".45"/><ellipse cx="14" cy="5" rx="6" ry="3.6" fill="#ff7fa3" opacity=".45"/><circle cx="-8" cy="-2" r="4" fill="#5b3a4a"/><circle cx="8" cy="-2" r="4" fill="#5b3a4a"/><circle cx="-6.6" cy="-3.6" r="1.4" fill="#fff"/><circle cx="9.4" cy="-3.6" r="1.4" fill="#fff"/><path d="M-4 4q4 4 8 0" stroke="#5b3a4a" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>`;
+const PCOL=['#ff9fbf','#ffd166','#8ec9f0','#9edb8f','#ffb27a'];
+const PNAME=['pink','yellow','blue','green','orange'];
+const PIECES=[
+// pink flower
+`<g stroke="#ec7aa0" stroke-width="3.5" fill="#ffb3cc">${[0,72,144,216,288].map(a=>`<circle cx="${50+22*Math.sin(a*Math.PI/180)}" cy="${52-22*Math.cos(a*Math.PI/180)}" r="17"/>`).join('')}</g><circle cx="50" cy="52" r="20" fill="#fff0b3" stroke="#f0c75e" stroke-width="3"/><ellipse cx="40" cy="30" rx="6" ry="4" fill="#fff" opacity=".7"/>${face(53,50,.8)}`,
+// yellow lantern
+`<path d="M38 14h24" stroke="#b9805c" stroke-width="5" stroke-linecap="round"/><path d="M50 8v8" stroke="#b9805c" stroke-width="4" stroke-linecap="round"/><rect x="33" y="17" width="34" height="9" rx="4" fill="#d9a074" stroke="#b9805c" stroke-width="3"/><rect x="22" y="25" width="56" height="58" rx="24" fill="#ffd66b" stroke="#ebb33f" stroke-width="3.5"/><rect x="30" y="31" width="40" height="44" rx="18" fill="#fff1b0"/><rect x="34" y="82" width="32" height="8" rx="4" fill="#d9a074" stroke="#b9805c" stroke-width="3"/><ellipse cx="36" cy="38" rx="5" ry="7" fill="#fff" opacity=".8"/>${face(56)}`,
+// blue mug
+`<path d="M40 20q-6-7 0-12M54 20q-6-7 0-12" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".9"/><path d="M72 42h6a12 12 0 0 1 0 24h-6" stroke="#6aa8d8" stroke-width="7" fill="none"/><path d="M72 42h6a12 12 0 0 1 0 24h-6" stroke="#9fd2f5" stroke-width="3" fill="none"/><rect x="16" y="26" width="60" height="62" rx="18" fill="#9fd2f5" stroke="#6aa8d8" stroke-width="3.5"/><path d="M18 40h56" stroke="#fff" stroke-width="5" opacity=".6"/><ellipse cx="28" cy="52" rx="4" ry="9" fill="#fff" opacity=".6"/>${face(62,46)}`,
+// green leaf
+`<path d="M50 8C86 22 90 66 50 92C10 66 14 22 50 8Z" fill="#a8e29a" stroke="#6fbf6a" stroke-width="3.5"/><path d="M50 18v66" stroke="#7fcf77" stroke-width="3" stroke-linecap="round"/><path d="M50 40l-14-8M50 40l14-8" stroke="#7fcf77" stroke-width="3" stroke-linecap="round"/><ellipse cx="36" cy="30" rx="5" ry="8" fill="#fff" opacity=".6" transform="rotate(25 36 30)"/>${face(60)}`,
+// orange acorn
+`<path d="M50 8v10" stroke="#a06a48" stroke-width="5" stroke-linecap="round"/><path d="M24 54C22 76 38 92 50 92s28-16 26-38Z" fill="#ffbe8a" stroke="#ec9258" stroke-width="3.5"/><path d="M14 46c0-18 16-28 36-28s36 10 36 28c0 6-6 9-12 8H26c-6 1-12-2-12-8z" fill="#c98a5e" stroke="#a06a48" stroke-width="3.5"/><path d="M26 34l10 12M42 28l8 14M58 28l-6 14M74 34l-10 12" stroke="#b07a52" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="34" cy="64" rx="4" ry="7" fill="#fff" opacity=".6"/>${face(70)}`,
+// rainbow cookie (special)
+`<circle cx="50" cy="50" r="40" fill="#fff6e6" stroke="#f0c9a0" stroke-width="3.5"/>${['#ff9fbf','#ffd166','#9edb8f','#8ec9f0'].map((c,i)=>`<path d="M${22+i*7} 62a${28-i*7} ${28-i*7} 0 0 1 ${56-i*14} 0" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round"/>`).join('')}<circle cx="30" cy="30" r="3" fill="#ff9fbf"/><circle cx="72" cy="34" r="3" fill="#8ec9f0"/><circle cx="66" cy="76" r="3" fill="#ffd166"/><circle cx="34" cy="76" r="3" fill="#9edb8f"/>`];
+const STRIPE_H=`<g opacity=".85"><rect x="6" y="38" width="88" height="7" rx="3.5" fill="#fff"/><rect x="6" y="55" width="88" height="7" rx="3.5" fill="#fff"/></g><path d="M4 50l8-7v14zM96 50l-8-7v14z" fill="#fff"/>`;
+const STRIPE_V=`<g transform="rotate(90 50 50)">${STRIPE_H}</g>`;
+const COIN=`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ffd166" stroke="#e9a93a" stroke-width="2"/><circle cx="12" cy="12" r="6" fill="none" stroke="#e9a93a" stroke-width="1.5"/><path d="M9 8.5q2-2 4 0" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>`;
+const SPK_ON=`<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#f784a5"/><path d="M16 8.5q3 3.5 0 7M18.5 6q5 6 0 12" stroke="#f784a5" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+const SPK_OFF=`<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#d6b8c4"/><path d="M16 9l5 6M21 9l-5 6" stroke="#d6b8c4" stroke-width="2" stroke-linecap="round"/></svg>`;
+const STAR=c=>`<svg viewBox="0 0 24 24"><path d="M12 1l2.6 7.4L22 9l-6 4.8L18 22l-6-4.4L6 22l2-8.2L2 9l7.4-.6z" fill="${c}" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+
+// ---------- Level 1 scene: lakeside campsite at sunset. viewBox 0 0 600 400
+// regions: [colorFamily 0-4, fill, path]. Families: 0 pink 1 yellow 2 blue 3 green 4 orange
+const circ=(x,y,r)=>`M${x-r} ${y}a${r} ${r} 0 1 0 ${2*r} 0a${r} ${r} 0 1 0 ${-2*r} 0Z`;
+const bulbs=(odd)=>{let d='';for(let i=1;i<12;i++){if(i%2!==odd)continue;const t=i/12,x=(1-t)**2*98+2*(1-t)*t*240+t*t*388,y=(1-t)**2*236+2*(1-t)*t*300+t*t*284+9;d+=`M${x-6} ${y}q0-8 6-8 6 0 6 8q0 7-6 7-6 0-6-7Z`}return d};
+const flower=(x,y)=>[0,72,144,216,288].map(a=>circ(x+7*Math.sin(a*Math.PI/180),y-7*Math.cos(a*Math.PI/180),5.5)).join('');
+const SCENE={w:600,h:400,regions:[
+[0,'#f9c3d3','M0 0H600V140Q450 120 300 134T0 128Z'],
+[4,'#fbc79a','M0 118Q150 102 300 116T600 120V262H0Z'],
+[1,'#ffe39a',circ(300,196,50)],
+[0,'#fde2ea','M70 82q8-24 34-18q14-22 40-6q26-4 30 18q16 4 8 16H68q-14-4 2-10Z'],
+[0,'#fde2ea','M408 54q8-20 30-14q13-19 35-4q22-3 25 15q13 4 6 13H404q-12-3 4-10Z'],
+[2,'#c3cdee','M0 236C40 200 70 168 100 160C130 168 150 196 170 208C200 172 230 146 256 146C290 150 330 200 360 222C400 186 430 166 456 168C500 176 550 214 600 232V270H0Z'],
+[2,'#a9bce6','M0 258C60 214 110 220 160 246C210 220 260 216 320 252C380 214 440 210 500 240C540 226 570 230 600 246V276H0Z'],
+[2,'#aedcec','M0 266H600V372H0Z'],
+[1,'#fff0b8','M262 272Q300 266 338 272L328 281Q300 285 272 281ZM280 292Q300 288 320 292L313 299Q300 302 287 299ZM290 310Q300 307 310 310L306 316Q300 318 294 316Z'],
+[0,'#f8cfdc','M50 288Q110 280 170 288Q110 295 50 288ZM430 300Q490 293 550 300Q490 307 430 300Z'],
+[0,'#f6a9bd','M334 306q38 9 76 0q-4 11-38 12q-34-1-38-12Z'],
+[3,'#b4dea6','M0 322C70 304 170 306 262 334V400H0Z'],
+[3,'#a6d69a','M340 338C420 306 520 300 600 314V400H340Z'],
+[3,'#c4e8b2','M0 362C120 344 220 348 300 352C400 346 500 348 600 364V400H0Z'],
+[3,'#7fc49a','M62 180L98 246H82L110 300H14L42 246H26Z'],
+[3,'#6db68b','M128 214L156 266H143L166 306H90L113 266H100Z'],
+[3,'#7fc49a','M548 186L580 246H566L592 300H504L530 246H516Z'],
+[3,'#93d0a2','M440 374q8-26 34-18q20-16 36 4q16-1 12 14Z'],
+[4,'#d6996c','M56 300h12v16h-12ZM122 306h12v12h-12ZM542 300h12v16h-12Z'],
+[4,'#f6a676','M212 250L268 334H156Z','translate(-20 14)'],
+[4,'#eb8a62','M212 250L230 334H200Z','translate(-20 14)'],
+[1,'#fff3d2','M384 282q0-18 18-18h96q24 0 28 22l6 30q2 13-11 13H396q-12 0-12-12Z','translate(0 22)'],
+[0,'#f7a9be','M386 310H527L529 320H386Z','translate(0 22)'],
+[2,'#bfe6f5','M400 276h26v18h-26ZM440 276h26v18h-26Z','translate(0 22)'],
+[4,'#f4b183','M486 288h20v38h-20Z','translate(0 22)'],
+[4,'#f9be8a','M480 262h50l10 14q-6 6-12 0q-6 6-12 0q-6 6-12 0q-6 6-12 0q-6 6-12 0Z','translate(0 22)'],
+[4,'#d6996c','M272 368l52-12l4 8l-52 12ZM272 358l52 12l-4 8l-52-12Z','translate(0 8)'],
+[4,'#f7955e','M300 304q24 24 15 46q-15 10-30 0q-9-22 15-46Z','translate(0 8)'],
+[1,'#ffd86b','M300 324q11 13 7 24q-7 5-14 0q-4-11 7-24Z','translate(0 8)'],
+[1,'#ffe27a',bulbs(1)],
+[0,'#ffb3c8',bulbs(0)],
+[0,'#ffa9c2',flower(70,372)+flower(108,384)+flower(170,378)],
+[0,'#ffbfd2',flower(420,384)+flower(560,374)+flower(520,388)],
+[1,'#ffe9a8',flower(236,388)+flower(372,382)]
+],
+// always-drawn ink details (wheels, string)
+fixed:`<path d="M98 245Q240 300 388 293" stroke="#9c7f8c" stroke-width="2" fill="none"/><circle cx="414" cy="352" r="12" fill="#7a6170"/><circle cx="414" cy="352" r="5" fill="#d9c8d0"/><circle cx="500" cy="352" r="12" fill="#7a6170"/><circle cx="500" cy="352" r="5" fill="#d9c8d0"/>`};

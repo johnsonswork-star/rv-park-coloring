@@ -1,18 +1,27 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="RV Park">
-<meta name="theme-color" content="#fbe9d7"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
-<title>Color Camp: RV Park</title><link rel="stylesheet" href="style.css"></head><body>
-<header id="top"><button id="tabGallery" class="tab on">🎨 Color</button><button id="tabPark" class="tab">🏕️ My Park</button>
-<div id="coins">🪙 <span id="coinN">0</span></div><div id="streak" title="Daily streak">🔥 <span id="streakN">0</span></div><button id="snd" class="icon">🔊</button></header>
+<meta name="apple-mobile-web-app-title" content="Cozy Camp"><meta name="theme-color" content="#fde8e4">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png">
+<title>Cozy Camp</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="bgdeco"></div>
+<header id="top">
+ <div class="tabs"><button id="tabPlay" class="tab on"><svg viewBox="0 0 24 24"><path d="M12 3c5 0 9 3.6 9 8 0 2.6-2 3.6-3.6 3.6h-1.6c-1 0-1.6.8-1.4 1.7.4 1.6-.6 3.7-2.6 3.7C6.9 20 3 16.4 3 11.5 3 6.8 7 3 12 3z" fill="#fff" opacity=".95"/><circle cx="8" cy="10" r="1.6" fill="#f48fb1"/><circle cx="12" cy="7.5" r="1.6" fill="#ffd166"/><circle cx="16" cy="10" r="1.6" fill="#7ec8e3"/></svg>Paint</button>
+ <button id="tabPark" class="tab"><svg viewBox="0 0 24 24"><path d="M12 3l9 15H3z" fill="#fff"/><path d="M12 9l4 9H8z" fill="#f6a676"/></svg>My Park</button></div>
+ <div class="pill" id="coinPill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ffd166" stroke="#e9a93a" stroke-width="2"/><circle cx="12" cy="12" r="6" fill="none" stroke="#e9a93a" stroke-width="1.5"/><path d="M9 8.5q2-2 4 0" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><span id="coinN">0</span></div>
+ <button id="snd" class="iconbtn" aria-label="Sound"></button>
+</header>
 <main>
-<section id="gallery" class="view on"><h2 id="parkTitle"></h2><p class="sub">Finish a picture to earn coins. Spend them in your park.</p><div id="grid"></div></section>
-<section id="color" class="view"><canvas id="cv"></canvas>
-<div id="cbar"><button id="back" class="pill">‹ Gallery</button><span id="pct">0%</span><button id="hint" class="pill">🔍 Find</button><button id="brush" class="pill">✋ Pan</button></div>
-<div id="palette"></div></section>
-<section id="park" class="view"><div id="parkWrap"><canvas id="pk"></canvas></div>
-<div id="shopBar"><div id="shopMsg">Pick something from the shop, then tap a spot in your park.</div><div id="shop"></div></div></section>
+ <section id="play" class="view on">
+  <div id="sceneCard"><div id="sceneTitle">Lakeside Sunset</div><div id="sceneWrap"></div><div id="progBar"><i></i></div></div>
+  <div id="boardCard"><div id="board"></div><div id="combo"></div></div>
+ </section>
+ <section id="park" class="view">
+  <div id="parkCard"><div id="parkWrap"></div></div>
+  <div id="shop"></div>
+ </section>
 </main>
+<div id="fx"></div>
 <div id="modal" class="hide"><div class="card" id="mcard"></div></div>
-<script src="scenes.js"></script><script src="game.js"></script></body></html>
+<svg width="0" height="0" style="position:absolute" id="defs"></svg>
+<script src="art.js"></script><script src="park.js"></script><script src="game.js"></script></body></html>
