@@ -18,7 +18,7 @@ const IP=Object.fromEntries(PARK_ITEMS.map(i=>[i.id,i]));
 const PATH='M400 560C400 500 330 470 330 420C330 360 470 350 470 300C470 260 420 240 400 200C380 160 420 120 400 60';
 function parkSVG(name,owned){
  const own=id=>owned.includes(id);
- let s=`<svg viewBox="0 0 800 560" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="gg" cx=".5" cy=".45" r=".7"><stop offset="0" stop-color="#d4f0bf"/><stop offset="1" stop-color="#b3e0a0"/></radialGradient></defs>
+ let s=`<svg viewBox="0 0 800 560" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="gg" cx=".5" cy=".45" r=".7"><stop offset="0" stop-color="#d4f0bf"/><stop offset="1" stop-color="#b3e0a0"/></radialGradient><pattern id="hatch" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="14" fill="#f0d9e2"/></pattern></defs>
  <rect width="800" height="560" fill="url(#gg)"/>`;
  for(const [x,y,r] of [[120,110,70],[680,90,60],[700,480,80],[260,300,50],[560,520,60],[90,520,50]])s+=`<ellipse cx="${x}" cy="${y}" rx="${r*1.4}" ry="${r}" fill="#ffffff" opacity=".18"/>`;
  for(let i=0;i<46;i++){const x=(i*137)%780+10,y=(i*91)%540+10;s+=`<path d="M${x} ${y}q2-6 4 0M${x+5} ${y}q2-5 4 0" stroke="#93c983" stroke-width="2" fill="none" stroke-linecap="round"/>`}

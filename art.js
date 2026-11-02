@@ -65,3 +65,35 @@ const SCENE={w:600,h:400,regions:[
 ],
 // always-drawn ink details (wheels, string)
 fixed:`<path d="M98 245Q240 300 388 293" stroke="#9c7f8c" stroke-width="2" fill="none"/><circle cx="414" cy="352" r="12" fill="#7a6170"/><circle cx="414" cy="352" r="5" fill="#d9c8d0"/><circle cx="500" cy="352" r="12" fill="#7a6170"/><circle cx="500" cy="352" r="5" fill="#d9c8d0"/>`};
+
+// ---------- Procedural backdrop scenes, each featuring a park item. Families: 0 pink 1 yellow 2 blue 3 green 4 orange
+const pineP=(x,b,h)=>{const w=h*.42;return `M${x} ${b-h}L${x+w*.75} ${b-h*.45}H${x+w*.4}L${x+w} ${b}H${x-w}L${x-w*.4} ${b-h*.45}H${x-w*.75}Z`};
+const roundTree=(x,b,r)=>`M${x-r} ${b-r}a${r} ${r*.95} 0 1 1 ${2*r} 0q0 ${r*.7}-${r} ${r*.7}t-${r}-${r*.7}Z`;
+const cloudP=(x,y,s)=>`M${x} ${y}q${8*s}-${24*s} ${34*s}-${18*s}q${14*s}-${22*s} ${40*s}-${6*s}q${26*s}-${4*s} ${30*s} ${18*s}q${16*s} ${4*s} ${8*s} ${16*s}H${x-2*s}q-${14*s}-${4*s} ${2*s}-${10*s}Z`;
+const starsP=(seed,n)=>{let d='';for(let i=0;i<n;i++){const x=20+((i*137+seed*53)%560),y=14+((i*71+seed*29)%120);d+=`M${x} ${y-6}l2 4 4 2-4 2-2 4-2-4-4-2 4-2Z`}return d};
+function backdrop(o){const R=[];const add=(f,c,d,t)=>R.push(t?[f,c,d,t]:[f,c,d]);
+ add(o.sky[0][0],o.sky[0][1],'M0 0H600V150Q450 128 300 142T0 136Z');
+ add(o.sky[1][0],o.sky[1][1],'M0 122Q150 106 300 120T600 124V262H0Z');
+ if(o.night){add(1,'#fff1a8',starsP(1,7));add(1,'#ffe39a',starsP(2,6));add(1,'#fff6cf',circ(470,70,30))}
+ else{add(1,o.sunC||'#ffe39a',circ(o.sunX||300,o.sunY||190,o.sunR||46));add(0,'#fde2ea',cloudP(70,82,1));add(0,'#fde8ef',cloudP(420,58,.85));if(o.cloud3)add(0,'#fbd3df',cloudP(250,40,.6))}
+ add(2,o.mtn1||'#c3cdee','M0 236C40 200 70 168 100 160C130 168 150 196 170 208C200 172 230 146 256 146C290 150 330 200 360 222C400 186 430 166 456 168C500 176 550 214 600 232V280H0Z');
+ add(2,o.mtn2||'#a9bce6','M0 258C60 214 110 220 160 246C210 220 260 216 320 252C380 214 440 210 500 240C540 226 570 230 600 246V290H0Z');
+ if(o.lake){add(2,'#aedcec','M0 270H600V372H0Z');add(1,'#fff0b8','M262 278Q300 272 338 278L328 286Q300 290 272 286Z');add(0,'#f8cfdc','M50 292Q110 284 170 292Q110 299 50 292ZM430 304Q490 297 550 304Q490 311 430 304Z')}
+ add(3,o.hill1||'#b4dea6','M0 318C70 300 170 304 262 330V400H0Z');add(3,o.hill2||'#a6d69a','M340 334C420 304 520 298 600 310V400H340Z');
+ add(3,o.grass||'#c4e8b2','M0 362C120 344 220 348 300 352C400 346 500 348 600 364V400H0Z');
+ if(o.path)add(4,'#f3d6aa','M262 400C270 380 290 366 300 352C310 366 330 380 338 400Z');
+ (o.pines||[[62,300,120],[128,306,92],[548,300,114]]).forEach(([x,b,h],k)=>{add(3,['#7fc49a','#6db68b','#8fd0a6'][k%3],pineP(x,b,h));add(4,'#d6996c',`M${x-6} ${b}h12v14h-12Z`)});
+ (o.autumn||[]).forEach(([x,b,r],k)=>{add(4,['#ffb27a','#f9a066'][k%2],roundTree(x,b-14,r));add(4,'#c98a5e',`M${x-5} ${b-16}h10v18h-10Z`)});
+ add(3,'#93d0a2','M440 374q8-26 34-18q20-16 36 4q16-1 12 14Z');add(3,'#9cd69a','M40 386q6-20 26-14q16-12 28 4q12-1 9 10Z');
+ add(0,'#ffa9c2',flower(70,378)+flower(108,388)+flower(170,384));add(0,'#ffbfd2',flower(420,388)+flower(560,378)+flower(520,392));add(1,'#ffe9a8',flower(236,390)+flower(372,386));
+ if(o.extra)o.extra.forEach(r=>add(...r));
+ return R}
+const LEVELS=[
+ {id:'lake',name:'Lakeside Sunset',item:'rv',regions:SCENE.regions,fixed:SCENE.fixed,spot:[455,305,95]},
+ {id:'pond',name:'Duck Pond Meadow',item:'pond',feat:[300,372,250],spot:[300,322,120],regions:backdrop({sky:[[2,'#bfe3f5'],[2,'#d6eef8']],sunX:480,sunY:90,sunR:36,cloud3:1,mtn1:'#c9d6f2',hill1:'#b9e3a8',autumn:[[440,300,30]],pines:[[70,300,120],[150,306,90],[540,300,110]]})},
+ {id:'fire',name:'Starry Campfire',item:'fire',feat:[300,372,150],spot:[300,330,90],regions:backdrop({night:1,sky:[[2,'#7f8fd0'],[0,'#c9a7d8']],mtn1:'#8c9ad6',mtn2:'#7b8ccc',hill1:'#86b98f',hill2:'#7aae86',grass:'#9ccc9a',path:1,autumn:[[470,312,34]]})},
+ {id:'lights',name:'Twinkle Evening',item:'lights',feat:[300,262,420],spot:[300,200,170],regions:backdrop({sky:[[0,'#f3b8d8'],[4,'#fcc9a4']],sunX:300,sunY:215,sunR:40,lake:1,autumn:[[230,330,26],[380,334,28]]})},
+ {id:'bench',name:'Picnic Morning',item:'bench',feat:[300,380,180],spot:[300,335,95],regions:backdrop({sky:[[1,'#fff0c2'],[0,'#fbd3df']],sunC:'#ffd27a',sunX:130,sunY:150,sunR:44,path:1,autumn:[[480,320,32],[420,330,24]]})},
+ {id:'tent',name:'Pine Forest Camp',item:'tent',feat:[300,372,170],spot:[300,318,100],regions:backdrop({sky:[[4,'#fcd2b0'],[1,'#ffe8b0']],sunX:300,sunY:200,sunR:42,pines:[[50,300,130],[120,310,100],[480,304,120],[555,300,138],[410,316,86]],autumn:[[200,330,24]]})}
+];
+const STARTER_ITEMS=['trees','garden'];
