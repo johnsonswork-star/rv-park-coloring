@@ -27,14 +27,12 @@ function parkSVG(name,owned){
  s+=`<g stroke="${INK}" stroke-width="2.5" fill="#fff1dc">`;for(let x=14;x<800;x+=36){if(x>350&&x<450)continue;s+=`<rect x="${x}" y="530" width="14" height="26" rx="5"/>`}s+=`<path d="M0 540H352M448 540H800" stroke-width="5" stroke="#fff1dc"/></g>`;
  // always: tiny starter bushes
  s+=bush(740,200,.8)+bush(300,90,.7)+bush(760,330,.75);
- // ordered by y for depth
- const order=['trees','lights','tent','rv','fire','pond','bench','garden'];
- for(const id of order) if(own(id)) s+=`<g id="it-${id}">${IP[id].svg()}</g>`;
+ s+=`<g id="items"></g><g id="ghost"></g>`;
  s+=`<g id="walkers"></g>`;
  // sign
  const nm=(name||'My Park').slice(0,22);const w=Math.max(230,nm.length*17+70);
  s+=`<g transform="translate(400 30)"><path d="M${-w/2+22} 36v40M${w/2-22} 36v40" stroke="#b9805c" stroke-width="9" stroke-linecap="round"/><rect x="${-w/2}" y="-14" width="${w}" height="58" rx="20" fill="#ffd9b8" stroke="${INK}" stroke-width="3"/><rect x="${-w/2+8}" y="-7" width="${w-16}" height="44" rx="15" fill="#fff4e6"/><text x="0" y="23" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="27" fill="#e0789a">${nm.replace(/[<&>]/g,'')}</text><circle cx="${-w/2+10}" cy="-10" r="10" fill="#ff9fbf" stroke="${INK}" stroke-width="2"/><circle cx="${w/2-10}" cy="-10" r="10" fill="#9edb8f" stroke="${INK}" stroke-width="2"/></g>`;
- if(!owned.length) s+=`<g transform="translate(560 440)"><rect x="-130" y="-30" width="260" height="60" rx="22" fill="#fff" opacity=".9" stroke="#f0c9d4" stroke-width="3"/><text x="0" y="8" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="20" fill="#b07890">Buy decor below to begin!</text></g>`;
+ if(false) s+=`<g transform="translate(560 440)"><rect x="-130" y="-30" width="260" height="60" rx="22" fill="#fff" opacity=".9" stroke="#f0c9d4" stroke-width="3"/><text x="0" y="8" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="20" fill="#b07890">Buy decor below to begin!</text></g>`;
  return s+`<style>.bulb{animation:tw 2.4s infinite}@keyframes tw{50%{opacity:.55}}.flame{animation:fl .8s infinite alternate;transform-origin:400px 290px}@keyframes fl{to{transform:scale(1.06,.94)}}.duck{animation:dk 4s ease-in-out infinite alternate}@keyframes dk{to{transform:translateX(-40px)}}</style></svg>`}
 function thumbSVG(it){const [x,y,w,h]=it.box;return `<svg viewBox="${x} ${y} ${w} ${h}" xmlns="http://www.w3.org/2000/svg">${it.svg()}</svg>`}
 const camper=(body,hair,skin='#ffe0cc')=>`<g class="cw"><ellipse cx="0" cy="2" rx="10" ry="3.5" fill="#00000018"/><g class="bob"><rect x="-8" y="-22" width="16" height="20" rx="7" fill="${body}" stroke="${INK}" stroke-width="2"/><circle cx="0" cy="-30" r="10" fill="${skin}" stroke="${INK}" stroke-width="2"/><path d="M-10-32q2-11 10-11t10 11q-6-4-10-4t-10 4Z" fill="${hair}" stroke="${INK}" stroke-width="1.5"/><circle cx="-3.5" cy="-29" r="1.6" fill="#5b3a4a"/><circle cx="3.5" cy="-29" r="1.6" fill="#5b3a4a"/><ellipse cx="-6" cy="-25" rx="2.5" ry="1.5" fill="#ff9fbf" opacity=".7"/><ellipse cx="6" cy="-25" rx="2.5" ry="1.5" fill="#ff9fbf" opacity=".7"/></g></g>`;

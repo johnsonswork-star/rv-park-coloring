@@ -11,7 +11,7 @@ const SFX={pop:c=>{const f=520*Math.pow(1.122,Math.min(c,8));tone(f,.14,'sine',.
  win:()=>[523,659,784,1047,1319].forEach((f,i)=>{tone(f,.6,'triangle',.05,1,i*.12);tone(f/2,.6,'sine',.03,1,i*.12)}),tap:()=>tone(660,.06,'sine',.04),special:()=>{tone(300,.4,'sawtooth',.02,3);tone(600,.4,'sine',.04,2)}};
 $('#snd').onclick=()=>{S.sound=!S.sound;save();hud();SFX.tap()};
 // ---------- views & modal
-function show(v){document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id===v));$('#tabPlay').classList.toggle('on',v==='play');$('#tabPark').classList.toggle('on',v==='park');if(v==='park')renderPark();else layout()}
+function show(v){document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id===v));$('#tabPlay').classList.toggle('on',v==='play');$('#tabPark').classList.toggle('on',v==='park');if(v==='park'){if(!svgEl||!$('#parkWrap svg'))renderPark();else{shop();bar()}}else layout()}
 $('#tabPlay').onclick=()=>{SFX.tap();show('play')};$('#tabPark').onclick=()=>{SFX.tap();show('park')};
 function modal(html,btns){$('#mcard').innerHTML=html+'<div>'+btns.map((b,i)=>`<button class="btn ${b.alt?'alt':''}" data-i="${i}">${b.t}</button>`).join('')+'</div>';$('#modal').classList.remove('hide');
  $('#mcard').querySelectorAll('.btn').forEach(el=>el.onclick=()=>{const b=btns[+el.dataset.i];SFX.tap();if(b.f&&b.f()===false)return;$('#modal').classList.add('hide')})}
@@ -24,13 +24,13 @@ const GRADS={'#f9c3d3':['#f5aec6','#f9c8d2'],'#fbc79a':['#fbc2a2','#ffe0b0'],'#a
 function sceneSVG(full){let s=`<svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg"><defs><filter id="wc" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter>`;
  Object.entries(GRADS).forEach(([k,[a,b]],j)=>s+=`<linearGradient id="gr${j}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`);
  R.forEach((r,i)=>s+=`<clipPath id="cp${i}"><circle id="cc${i}" cx="300" cy="200" r="${full||S.painted.includes(i)?900:0}"/></clipPath>`);
- s+=`<pattern id="paper" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".6" fill="#000" opacity=".04"/></pattern></defs><g stroke-linejoin="round" stroke-linecap="round">`;
+ s+=`<pattern id="paper" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".6" fill="#000" opacity=".04"/></pattern><radialGradient id="fog" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#fffaf3"/><stop offset="1" stop-color="#fbe9e4"/></radialGradient></defs><filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="22"/></filter><g id="cover"><rect width="600" height="400" fill="url(#fog)"/>${[[110,90,70],[470,70,90],[300,230,120],[90,320,80],[520,320,90],[300,60,60]].map(([x,y,r],k)=>`<ellipse class="mist" style="animation-delay:${k*.7}s" cx="${x}" cy="${y}" rx="${r*1.5}" ry="${r}" fill="${['#fde3ea','#e8f2fb','#fff2d6','#e6f5e3','#f3e6fb','#fde3ea'][k]}" opacity=".8" filter="url(#soft)"/>`).join('')}</g><g stroke-linejoin="round" stroke-linecap="round">`;
  const gk=Object.keys(GRADS);
  R.forEach((r,i)=>{const gi=gk.indexOf(r[1]);const fill=gi>=0?`url(#gr${gi})`:r[1];const T=r[3]?` transform="${r[3]}"`:'';
-  s+=`<g${T}><path id="rb${i}" d="${r[2]}" fill="${gray(r[1])}" stroke="#b49aa8" stroke-width="2.2" class="ln"/><g filter="url(#wc)" clip-path="url(#cp${i})"><path d="${r[2]}" fill="${fill}"/></g><path d="${r[2]}" fill="none" stroke="#a88a98" stroke-width="2.2" class="ln" opacity="${full?.35:.85}"/></g>`});
- return s+`</g>${SCENE.fixed}<rect width="600" height="400" fill="url(#paper)"/></svg>`}
+  s+=`<g${T}><path id="rb${i}" d="${r[2]}" fill="none" stroke="none"/><g clip-path="url(#cp${i})"><path d="${r[2]}" fill="${fill}" filter="url(#wc)"/><path d="${r[2]}" fill="none" stroke="#a88a98" stroke-width="2.2" class="ln" opacity="${full?.35:.8}"/></g></g>`});
+ const done=full||S.painted.length>=TOTAL;return s+`</g><g id="fixedArt" style="opacity:${done?1:0};transition:opacity 1s">${SCENE.fixed}</g><rect width="600" height="400" fill="url(#paper)"/>${full?'':`<g id="mystery" style="transition:opacity .8s;opacity:${Math.max(0,1-S.painted.length/TOTAL*7)}"><circle cx="300" cy="186" r="62" fill="#fff" opacity=".85" stroke="#f6c3d2" stroke-width="5" stroke-dasharray="4 10" stroke-linecap="round"/><text x="300" y="214" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="84" fill="#f59ab5">?</text><text x="300" y="290" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="26" fill="#c98aa3">Match pieces to reveal the picture</text></g>`}<style>.mist{animation:mist 7s ease-in-out infinite alternate}@keyframes mist{to{transform:translate(18px,-8px);opacity:.4}}</style></svg>`}
 function renderScene(){$('#sceneWrap').innerHTML=sceneSVG(false);prog()}
-function prog(){$('#progBar i').style.width=(S.painted.length/TOTAL*100)+'%'}
+function prog(){$('#progBar i').style.width=(S.painted.length/TOTAL*100)+'%';const m=$('#mystery');if(m)m.style.opacity=Math.max(0,1-S.painted.length/TOTAL*7);$('#sceneTitle').textContent=S.painted.length>=TOTAL?'Lakeside Sunset':'Mystery Picture'}
 function regionCenter(i){const b=$('#rb'+i).getBoundingClientRect();return {x:b.left+b.width/2,y:b.top+b.height/2,b}}
 function paintRegion(i){const p=$('#rb'+i);if(!p)return;const bb=p.getBBox();const c=$('#cc'+i);c.setAttribute('cx',bb.x+bb.width/2);c.setAttribute('cy',bb.y+bb.height/2);const Rm=Math.hypot(bb.width,bb.height)/2+12;const t0=performance.now();
  const step=t=>{const k=Math.max(0,Math.min(1,(t-t0)/950)),e=1-Math.pow(1-k,3);c.setAttribute('r',Rm*e);if(k<1)requestAnimationFrame(step);else c.setAttribute('r',900)};requestAnimationFrame(step);
@@ -98,27 +98,60 @@ function feedPaint(counts,pos){const sr=$('#sceneWrap').getBoundingClientRect();
   if(!todo.length){const [x,y]=pos[f][0];droplet(x,y,sr.left+sr.width*(.2+Math.random()*.6),sr.top+sr.height*.5,PCOL[f],()=>{})}});
  save();setTimeout(prog,700)}
 function finish(){SFX.win();const first=!S.plays;const earned=first?150:120;S.plays++;S.coins+=earned;save();
- document.querySelectorAll('#sceneWrap .ln').forEach(e=>{e.style.transition='opacity 1.2s';e.style.opacity=.3});const sr=$('#sceneWrap').getBoundingClientRect();
+ $('#fixedArt').style.opacity=1;$('#sceneTitle').textContent='Lakeside Sunset';document.querySelectorAll('#sceneWrap .ln').forEach(e=>{e.style.transition='opacity 1.2s';e.style.opacity=.3});const sr=$('#sceneWrap').getBoundingClientRect();
  for(let i=0;i<26;i++)setTimeout(()=>spark(sr.left+Math.random()*sr.width,sr.top+Math.random()*sr.height,PCOL[i%5],20+Math.random()*24),i*60);
  setTimeout(()=>{modal(`<h3>Picture complete!</h3><div class="art">${sceneSVG(true)}</div><p>Lakeside Sunset is all painted.</p><div class="reward">${COIN}+${earned}</div>`,
   [{t:'Decorate my park',f:()=>{reset();show('park')}},{t:'Paint again',alt:1,f:()=>{reset();show('play')}}]);SFX.coin();hud(1)},1700)}
 function reset(){busy=false;S.painted=[];S.acc=[0,0,0,0,0];save();renderScene();newBoard()}
-// ---------- park
-let walkers=[],wpath=null,lastBought=null;
+// ---------- park (free placement)
+const NS='http://www.w3.org/2000/svg';
+if(!S.items){S.items=(S.owned||[]).map(id=>{const [x,y,w,h]=IP[id].box;return {id,x:x+w/2,y:y+h,flip:0}});S.inv={}}
+let walkers=[],wpath=null,svgEl=null,placing=null,selIdx=-1,lp=null,justPlaced=null;
+const anchor=id=>{const [x,y,w,h]=IP[id].box;return [x+w/2,y+h,w,h]};
+function itemG(o,ghost){const [ax,ay]=anchor(o.id);const g=document.createElementNS(NS,'g');g.setAttribute('transform',`translate(${o.x} ${o.y})${o.flip?' scale(-1 1)':''} translate(${-ax} ${-ay})`);g.innerHTML='<g>'+IP[o.id].svg()+'</g>';return g}
+function foot(o){const [,,w,h]=anchor(o.id);const fw=w*.42,fh=Math.min(h*.22,26);return [o.x-fw,o.y-fh,o.x+fw,o.y+4]}
+function valid(o,skip){const [x0,y0,x1,y1]=foot(o);if(x0<8||x1>792||y0<108||y1>545)return false;
+ for(let i=0;i<S.items.length;i++){if(i===skip)continue;const [a0,b0,a1,b1]=foot(S.items[i]);if(x0<a1&&x1>a0&&y0<b1&&y1>b0)return false}return true}
+function svgPt(e){const pt=svgEl.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svgEl.getScreenCTM().inverse())}
+function drawItems(){const L=svgEl.querySelector('#items');L.innerHTML='';const order=S.items.map((o,i)=>[o,i]).sort((a,b)=>a[0].y-b[0].y);
+ for(const [o,i] of order){if(placing&&placing.from===i)continue;const g=itemG(o);g.dataset.i=i;if(i===selIdx)g.setAttribute('filter','drop-shadow(0 0 6px #fff) drop-shadow(0 0 4px #f784a5)');if(justPlaced===i){g.firstChild.classList.add('newitem')}L.appendChild(g)}justPlaced=null;drawGhost()}
+function drawGhost(){const G2=svgEl.querySelector('#ghost');G2.innerHTML='';if(!placing||placing.x==null)return;const ok=valid(placing,placing.from);placing.ok=ok;const [x0,y0,x1,y1]=foot(placing);
+ G2.innerHTML=`<ellipse cx="${placing.x}" cy="${(y0+y1)/2}" rx="${(x1-x0)/2+8}" ry="${(y1-y0)/2+8}" fill="${ok?'#7fdc8a':'#ff8a9a'}" opacity=".55" stroke="${ok?'#3fae55':'#e0506a'}" stroke-width="3" stroke-dasharray="8 6"/>`;const g=itemG(placing);g.setAttribute('opacity','.75');G2.appendChild(g)}
 function renderPark(){const card=$('#parkCard').getBoundingClientRect();const w=Math.min(card.width,card.height*800/560);const pw=$('#parkWrap');pw.style.width=w+'px';pw.style.height=w*560/800+'px';
- pw.innerHTML=parkSVG(S.park,S.owned);const svg=pw.querySelector('svg');wpath=document.createElementNS('http://www.w3.org/2000/svg','path');wpath.setAttribute('d',PATH);wpath.setAttribute('fill','none');svg.insertBefore(wpath,svg.firstChild);
- const n=Math.min(5,1+Math.ceil(S.owned.length/2));walkers=[];const g=pw.querySelector('#walkers');for(let i=0;i<n;i++){const el=document.createElementNS('http://www.w3.org/2000/svg','g');el.innerHTML=CAMPERS[i];g.appendChild(el);walkers.push({el,p:Math.random(),v:(.00035+Math.random()*.0003)*(i%2?1:-1),side:(i%2?1:-1)*(6+i*3)})}
- if(lastBought){const it=pw.querySelector('#it-'+lastBought);if(it){it.classList.add('newitem');const b=it.getBoundingClientRect();for(let i=0;i<10;i++)setTimeout(()=>spark(b.left+Math.random()*b.width,b.top+Math.random()*b.height,PCOL[i%5],30),i*70)}lastBought=null}
- shop();hud()}
+ pw.innerHTML=parkSVG(S.park,[]);svgEl=pw.querySelector('svg');wpath=document.createElementNS(NS,'path');wpath.setAttribute('d',PATH);wpath.setAttribute('fill','none');svgEl.insertBefore(wpath,svgEl.firstChild);
+ const n=Math.min(5,1+Math.ceil(S.items.length/2));walkers=[];const g=svgEl.querySelector('#walkers');for(let i=0;i<n;i++){const el=document.createElementNS(NS,'g');el.innerHTML=CAMPERS[i];g.appendChild(el);walkers.push({el,p:Math.random(),v:(.00035+Math.random()*.0003)*(i%2?1:-1),side:(i%2?1:-1)*(6+i*3)})}
+ svgEl.addEventListener('pointerdown',pDown);svgEl.addEventListener('pointermove',pMove);svgEl.addEventListener('pointerup',pUp);svgEl.style.touchAction='none';
+ drawItems();shop();bar();hud()}
+function hitItem(p){let best=-1,by=-1;S.items.forEach((o,i)=>{const [,,w,h]=anchor(o.id);if(p.x>o.x-w/2&&p.x<o.x+w/2&&p.y>o.y-h&&p.y<o.y+6&&o.y>by){best=i;by=o.y}});return best}
+function pDown(e){const p=svgPt(e);svgEl.setPointerCapture(e.pointerId);if(placing){placing.x=p.x;placing.y=p.y;drawGhost();return}
+ const i=hitItem(p);if(i<0){if(selIdx>=0){selIdx=-1;drawItems();bar()}return}
+ lp={i,t:setTimeout(()=>{startMove(i,true);placing.x=p.x;placing.y=p.y;drawItems();if(navigator.vibrate)navigator.vibrate(15)},420),x:p.x,y:p.y}}
+function pMove(e){const p=svgPt(e);if(lp&&Math.hypot(p.x-lp.x,p.y-lp.y)>12){clearTimeout(lp.t);lp=null}if(placing){placing.x=p.x;placing.y=p.y;drawGhost()}}
+function pUp(e){if(lp){clearTimeout(lp.t);const i=lp.i;lp=null;if(!placing){selIdx=selIdx===i?-1:i;SFX.tap();drawItems();bar();return}}
+ if(!placing||placing.x==null)return;if(placing.drag&&!placing.ok){cancelPlace();return}if(!placing.ok){SFX.nope();msg('That spot is blocked. Try a green spot.');return}
+ const o={id:placing.id,x:Math.round(placing.x),y:Math.round(placing.y),flip:placing.flip||0};
+ if(placing.from!=null){S.items[placing.from]=o;justPlaced=placing.from}else{S.items.push(o);S.inv[o.id]--;justPlaced=S.items.length-1;const [,,w,h]=anchor(o.id);sparkAt(o.x,o.y-h/2)}
+ placing=null;selIdx=-1;save();SFX.coin();setTimeout(SFX.paint,100);renderPark()}
+function sparkAt(x,y){const m=svgEl.getScreenCTM();for(let i=0;i<10;i++)setTimeout(()=>spark(m.e+x*m.a+(Math.random()-.5)*80,m.f+y*m.d+(Math.random()-.5)*60,PCOL[i%5],30),i*70)}
+function startMove(i,drag){const o=S.items[i];placing={id:o.id,flip:o.flip,from:i,x:o.x,y:o.y,drag};selIdx=-1;lp=null;bar();drawItems()}
+function startPlace(id){placing={id,flip:0,from:null,x:null,y:null};selIdx=-1;show('park');msg(`Tap anywhere to place your ${IP[id].name}. Green means it fits.`)}
+function cancelPlace(){placing=null;drawItems();bar()}
+function msg(t){$('#parkMsg').textContent=t}
+function bar(){let b=$('#parkBar');if(!b){b=document.createElement('div');b.id='parkBar';$('#park').insertBefore(b,$('#shop'))}
+ if(placing){b.innerHTML=`<span id="parkMsg">${placing.from!=null?'Drag to a new spot, then let go.':`Tap or drag to place your ${IP[placing.id].name}. Green means it fits.`}</span><button class="mini" id="pbFlip">Flip</button><button class="mini alt" id="pbCancel">Cancel</button>`;
+  $('#pbFlip').onclick=()=>{placing.flip=placing.flip?0:1;drawGhost()};$('#pbCancel').onclick=cancelPlace}
+ else if(selIdx>=0){const o=S.items[selIdx];b.innerHTML=`<span id="parkMsg">${IP[o.id].name}</span><button class="mini" id="pbMove">Move</button><button class="mini" id="pbFlip">Flip</button><button class="mini alt" id="pbStore">Put in bag</button>`;
+  $('#pbMove').onclick=()=>startMove(selIdx,false);$('#pbFlip').onclick=()=>{o.flip=o.flip?0:1;save();drawItems()};$('#pbStore').onclick=()=>{S.inv[o.id]=(S.inv[o.id]||0)+1;S.items.splice(selIdx,1);selIdx=-1;save();renderPark()}}
+ else b.innerHTML=`<span id="parkMsg">Tap decor to move, flip or store it. Hold and drag to move it quickly.</span>`}
 function walk(){if(wpath&&$('#park').classList.contains('on')){const L=wpath.getTotalLength();for(const w of walkers){w.p+=w.v;if(w.p>1||w.p<0){w.v*=-1;w.p=Math.max(0,Math.min(1,w.p))}const pt=wpath.getPointAtLength(w.p*L);w.el.setAttribute('transform',`translate(${pt.x+w.side} ${pt.y}) scale(${w.v<0?-1:1} 1)`)}}requestAnimationFrame(walk)}walk();
-function shop(){const s=$('#shop');s.innerHTML='';for(const it of PARK_ITEMS){const own=S.owned.includes(it.id);const d=document.createElement('div');d.className='item';
- d.innerHTML=`<div class="th">${thumbSVG(it)}</div><div class="nm">${it.name}</div>`+(own?`<div class="owned">In your park</div>`:`<button class="buy ${S.coins<it.price?'poor':''}">${COIN}${it.price}</button>`);
- if(!own)d.querySelector('.buy').onclick=()=>buy(it);s.appendChild(d)}}
+function shop(){const s=$('#shop');s.innerHTML='';for(const it of PARK_ITEMS){const n=S.inv[it.id]||0,placed=S.items.filter(o=>o.id===it.id).length;const d=document.createElement('div');d.className='item';
+ d.innerHTML=`<div class="th">${thumbSVG(it)}</div><div class="nm">${it.name}${placed?` <small>(${placed})</small>`:''}</div><div class="row">${n?`<button class="buy place">Place ${n}</button>`:''}<button class="buy ${S.coins<it.price?'poor':''}">${COIN}${it.price}</button></div>`;
+ const bs=d.querySelectorAll('.buy');if(n)bs[0].onclick=()=>{SFX.tap();startPlace(it.id);bar();drawGhost()};bs[bs.length-1].onclick=()=>buy(it);s.appendChild(d)}}
 function buy(it){if(S.coins<it.price){SFX.nope();modal(`<h3>Almost!</h3><p>You need <b>${it.price-S.coins}</b> more coins for the ${it.name}. Paint a picture to earn more.</p>`,[{t:'Go paint',f:()=>show('play')},{t:'OK',alt:1}]);return}
- S.coins-=it.price;S.owned.push(it.id);save();lastBought=it.id;SFX.coin();setTimeout(SFX.paint,120);hud(1);renderPark()}
+ S.coins-=it.price;S.inv[it.id]=(S.inv[it.id]||0)+1;save();SFX.coin();hud(1);shop();startPlace(it.id);bar()}
 // ---------- first launch name
 function askName(){modal(`<h3>Welcome to Cozy Camp!</h3><p>You have a sweet little patch of land by the lake. What will you name your RV park?</p><input id="pn" maxlength="22" placeholder="Sunny Pines">`,[{t:'Open my park',f:()=>{const v=$('#pn').value.trim();if(!v)return false;S.park=v;save();SFX.win()}}]);setTimeout(()=>$('#pn')&&$('#pn').focus(),60)}
 // ---------- boot
 document.fonts&&document.fonts.load('600 20px Fredoka');
 hud();layout();renderScene();newBoard();clearHint();if(!S.park)setTimeout(askName,400);
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js?v=3').catch(()=>{});

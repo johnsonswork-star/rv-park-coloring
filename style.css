@@ -49,10 +49,16 @@ main{position:absolute;top:76px;bottom:0;left:0;right:0}
 .reward{display:inline-flex;align-items:center;gap:8px;font:700 30px Fredoka;color:#8a5b3c;background:#fff3d6;padding:8px 20px;border-radius:22px}.reward svg{width:34px}
 #parkCard{flex:1 1 auto;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
 #parkWrap{border-radius:30px;overflow:hidden;line-height:0;box-shadow:0 5px 0 #d9e8cf,0 14px 30px #6a9a6a33;background:#c4e8b0}#parkWrap svg{display:block;width:100%;height:100%}
-#shop{flex:0 0 auto;width:100%;display:flex;gap:12px;overflow-x:auto;padding:6px 4px 10px}
-.item{flex:0 0 132px;background:#fff;border-radius:24px;text-align:center;padding:8px 8px 10px;box-shadow:0 4px 0 #f1dcd2,0 8px 16px #c9878f22;font-weight:600}
-.item .th{height:78px;display:flex;align-items:center;justify-content:center}.item .th svg{max-width:100%;max-height:78px}
+#shop{flex:0 0 auto;width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:4px}
+.item{background:#fff;border-radius:24px;text-align:center;padding:8px 8px 10px;box-shadow:0 4px 0 #f1dcd2,0 8px 16px #c9878f22;font-weight:600}
+.item .th{height:62px;display:flex;align-items:center;justify-content:center}.item .th svg{width:100%;height:62px;display:block}
 .item .nm{font-size:16px;margin:2px 0 6px}
 .buy{display:inline-flex;align-items:center;gap:5px;font:700 17px Fredoka;border:0;border-radius:16px;padding:6px 14px;background:linear-gradient(#ffe08a,#ffc94d);color:#8a5b3c;box-shadow:0 3px 0 #e9a93a}.buy svg{width:20px}
 .buy.poor{filter:grayscale(.6);opacity:.6}.owned{font-size:16px;color:#5fa86a;padding:6px}
 .newitem{animation:born .6s cubic-bezier(.3,1.6,.5,1);transform-box:fill-box;transform-origin:50% 90%}
+#ver{font:600 12px Fredoka;color:#c9a0b0;background:#fff8;padding:3px 8px;border-radius:10px}
+#sceneWrap svg,#parkWrap svg{width:100%;height:auto}
+#parkBar{width:100%;display:flex;align-items:center;gap:8px;background:#fff;border-radius:20px;padding:8px 10px 8px 16px;box-shadow:0 3px 0 #f1dcd2;font-weight:600;font-size:16px}#parkMsg{flex:1}
+.mini{font:700 16px Fredoka;border:0;border-radius:14px;padding:8px 14px;background:linear-gradient(#ff9fb9,#f784a5);color:#fff;box-shadow:0 3px 0 #e06b8e}.mini.alt{background:linear-gradient(#b9e8b4,#8fd38a);box-shadow:0 3px 0 #6fb56a}
+.item .row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}.buy.place{background:linear-gradient(#b9e8b4,#8fd38a);box-shadow:0 3px 0 #6fb56a;color:#fff}.item small{opacity:.6}
+#parkWrap .newitem{animation:born .6s cubic-bezier(.3,1.6,.5,1);transform-box:fill-box;transform-origin:50% 90%}
